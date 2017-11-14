@@ -24,6 +24,9 @@ public class GammaThrottler implements NanoThrottler {
 		if(periodMs < 0) {
 			throw new IllegalArgumentException("Negative periodMs ?");
 		}
+		if(gamma <= 0.0D || gamma > 10.0D) {
+			throw new IllegalArgumentException("gamma should be in ]0...10] range.");
+		}
 		this.gamma = gamma;
 		this.periodMs = periodMs;
 		this.bufferSize = actionsInPeriod + 1;	// one cell is always empty
@@ -56,9 +59,10 @@ public class GammaThrottler implements NanoThrottler {
 
 		if((head + 1) % bufferSize == tail) {
 			// round buffer is full
-			System.out.println("registerNewAction: relax " + (timestamps[tail] + periodMs - System.currentTimeMillis() + 1));
+			long msToRelaxToMakeTailOutdated = timestamps[tail] + periodMs - System.currentTimeMillis() + 1;
+			System.out.println("registerNewAction: relax " + msToRelaxToMakeTailOutdated);
 
-			relax(timestamps[tail] + periodMs - System.currentTimeMillis());
+			relax(msToRelaxToMakeTailOutdated);
 			tail = (tail + 1) % bufferSize;
 		} else {
 			// round buffer is not empty
@@ -90,16 +94,18 @@ public class GammaThrottler implements NanoThrottler {
 	 * @return milliseconds to delay: [0.0 .. periodMs]
 	 */
 	private long gamma(int actionsCount) {
-		long timeReserveMs = timestamps[tail] + periodMs - System.currentTimeMillis();
 		int actionsReserve = bufferSize - 1 - actionsCount;
+		long timeReserveMs = timestamps[tail] + periodMs - System.currentTimeMillis();
 		long result;
-		if(actionsReserve < 2) {
-			result = timeReserveMs - 1;
-		} else {
-			result = /* (double) gamma calculation here */ timeReserveMs / actionsReserve;
+		if(actionsReserve < 1) {
+			System.out.println("gamma(" + actionsCount + ") is called for full buffer. THIS SHOULD NOT HAPPEN !");
+			return timeReserveMs - 1;	
 		}
+		double bufferFilled = 1.0D * actionsCount / (bufferSize - 1);	// in range 0..1
+		long expectedMs = (long)(periodMs * Math.pow(bufferFilled, gamma)); 
+		result = expectedMs - periodMs + timeReserveMs;
 		System.out.println("gamma:" + timestamps[tail] + ' ' + timeReserveMs + ' ' + actionsCount + ' ' + result);
-		return result;  
+		return result <= 0 ? 1: result;  
 	}
 
 	private double gamma;

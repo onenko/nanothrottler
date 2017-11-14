@@ -19,46 +19,93 @@ public class GammaThrottlerTest {
 
 	@Test
 	public void testAllFitInTimeFrame() {
-		NanoThrottler bt = new GammaThrottler(ONE_SECOND_FRAME, 5);
+		NanoThrottler th = new GammaThrottler(ONE_SECOND_FRAME, 5);
 		long start = System.currentTimeMillis();
+		System.out.println("testAllFitInTimeFrame() start:" + start);
 		for(int i = 0; i < 5; i++) {
-			bt.allow();
+			th.allow();
 		}
 		long end = System.currentTimeMillis();
+		System.out.println("testAllFitInTimeFrame() duration:" + (end-start));
 		assertTrue(end - start <= ONE_SECOND_FRAME);
 	}
 
 	@Test
 	public void testNotFitInTimeFrame() {
-		NanoThrottler bt = new GammaThrottler(ONE_SECOND_FRAME, 5);
+		NanoThrottler th = new GammaThrottler(ONE_SECOND_FRAME, 5);
 		long start = System.currentTimeMillis();
+		System.out.println("testNotFitInTimeFrame() start:" + start);
 		for(int i = 0; i < 6; i++) {
-			bt.allow();
+			th.allow();
 		}
 		long end = System.currentTimeMillis();
+		System.out.println("testNotFitInTimeFrame() duration:" + (end-start));
 		assertTrue(end - start >= ONE_SECOND_FRAME);
 	}
 
 	@Test
 	public void testAllFitInTimeFrame3Times() {
-		NanoThrottler bt = new GammaThrottler(ONE_SECOND_FRAME, 15);
+		NanoThrottler th = new GammaThrottler(ONE_SECOND_FRAME, 15);
 		long start = System.currentTimeMillis();
+		System.out.println("testAllFitInTimeFrame3Times() start:" + start);
 		for(int i = 0; i < 45; i++) {
-			bt.allow();
+			th.allow();
 		}
 		long end = System.currentTimeMillis();
+		System.out.println("testAllFitInTimeFrame3Times() duration:" + (end-start));
 		assertTrue(end - start <= 3 * ONE_SECOND_FRAME);
 	}
 
 	@Test
 	public void testNotFitInTimeFrame3Times() {
-		NanoThrottler bt = new GammaThrottler(ONE_SECOND_FRAME, 15);
+		NanoThrottler th = new GammaThrottler(ONE_SECOND_FRAME, 15);
 		long start = System.currentTimeMillis();
+		System.out.println("testNotFitInTimeFrame3Times() start:" + start);
 		for(int i = 0; i < 46; i++) {
-			bt.allow();
+			th.allow();
 		}
 		long end = System.currentTimeMillis();
+		System.out.println("testNotFitInTimeFrame3Times() duration:" + (end-start));
 		assertTrue(end - start >= 3 * ONE_SECOND_FRAME);
+	}
+
+	@Test
+	public void testFitInTimeFrame5Times() {
+		NanoThrottler th = new GammaThrottler(ONE_SECOND_FRAME, 10);
+		long start = System.currentTimeMillis();
+		System.out.println("testNotFitInTimeFrame5Times() start:" + start);
+		for(int i = 0; i < 50; i++) {
+			th.allow();
+		}
+		long end = System.currentTimeMillis();
+		System.out.println("testNotFitInTimeFrame5Times() duration:" + (end-start));
+		assertTrue(end - start <= 5 * ONE_SECOND_FRAME);
+	}
+
+	@Test
+	public void testFitInTimeFrame5TimesGamma2() {
+		NanoThrottler th = new GammaThrottler(ONE_SECOND_FRAME, 10, 2.0D);
+		long start = System.currentTimeMillis();
+		System.out.println("testNotFitInTimeFrame5Times() start:" + start);
+		for(int i = 0; i < 50; i++) {
+			th.allow();
+		}
+		long end = System.currentTimeMillis();
+		System.out.println("testNotFitInTimeFrame5Times() duration:" + (end-start));
+		assertTrue(end - start <= 5 * ONE_SECOND_FRAME);
+	}
+
+	@Test
+	public void testNotFitInTimeFrame5TimesGamma2() {
+		NanoThrottler th = new GammaThrottler(ONE_SECOND_FRAME, 10, 2.0D);
+		long start = System.currentTimeMillis();
+		System.out.println("testNotFitInTimeFrame5Times() start:" + start);
+		for(int i = 0; i < 51; i++) {
+			th.allow();
+		}
+		long end = System.currentTimeMillis();
+		System.out.println("testNotFitInTimeFrame5Times() duration:" + (end-start));
+		assertTrue(end - start >= 5 * ONE_SECOND_FRAME);
 	}
 
 
